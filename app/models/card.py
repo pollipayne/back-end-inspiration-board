@@ -2,7 +2,7 @@ from app import db
 
 
 class Card(db.Model):
-    __name__ = 'card'
+    __tablename__ = 'card'
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(40))
+    message = db.Column(db.String(40), nullable=False)
     likes_count = db.Column(db.Integer)
