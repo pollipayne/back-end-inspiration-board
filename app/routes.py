@@ -14,6 +14,15 @@ card_bp = Blueprint("cards", __name__, url_prefix='/cards')
 # >>>>>>> CRUD FOR CARDS BELOW >>>>>>>>
 
 #GET requests/all cards for a single board (return a list of card dictionaries?)
+@card_bp.route("", methods=["GET"])
+def get_all_cards():
+    cards = Card.query.all()
+
+    card_response = []
+
+    for card in cards:
+        card_response.append(card.to_json())
+    return jsonify(card_response), 200 
 
 
 
