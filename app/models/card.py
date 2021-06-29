@@ -15,7 +15,8 @@ class Card(db.Model):
         card_dictionary = {
             'id': self.id, 
             "message": self.message, 
-            "likes_count": self.likes_count
+            "likes_count": self.likes_count,
+            "board_id": self.board_id
         }
 
         return card_dictionary
