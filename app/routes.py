@@ -6,21 +6,6 @@ import requests
 import os 
 from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
 
-# 6.29.21 backend workflow
-### BUILD helper functions here: uniform make_response msg - LC 
-### UNIFORM ERROR MSGING 'board': dict details - LC converge towards BP format 
-### CREATE ENDPOINT POST card by board endpoint - LC
-    # IF MSG MORE THAN 40 CHARS
-    # IF BLANK CARD POST ATTEMPT
-
-#Completed 6.29 
-### CREATE ENDPOINT boards/<board_id>/cards - get cards asso'd with specific board - BP
-### +1 FEATURE (see rentals counter) - BP 
-
-
-
-# example_bp = Blueprint('example_bp', __name__)
-
 card_bp = Blueprint("cards", __name__, url_prefix='/cards')
 board_bp = Blueprint("boards", __name__, url_prefix="/boards")
 
@@ -35,7 +20,7 @@ def get_all_cards():
 
     for card in cards:
         card_response.append(card.to_json())
-    return jsonify(card_response), 200 
+    return jsonify(card_response) # took off 200, bc default status code - LC
 
 
 # GET request for single card by id (probably won't be needed)
@@ -44,8 +29,7 @@ def get_single_card(card_id):
     card = Card.query.get(card_id)
 
     if card is None:
-        return make_response({'details':"invalid ID"}, 404)
-    
+        return make_response({"details": "Invalid ID"}, 404)
     return {'card': card.to_json()}
 
 
@@ -75,12 +59,12 @@ def post_new_card():
     try:
         new_card = Card.new_card_from_json(request_body)
     except KeyError: 
-        return make_response({"details": "Invalid Data"}, 400)
+        return make_response({"details": "Invalid ID"}, 404)
     
     db.session.add(new_card)
     db.session.commit()
-
-    return make_response({'card': new_card.to_json()}, 201)
+    return {'card': new_card.to_json()}, 201
+    #return make_response({'card': new_card.to_json()}, 201) -- original
 
 
 
@@ -90,17 +74,15 @@ def delete_single_card(card_id):
 
     card = Card.query.get(card_id)
     if card is None:
-        return make_response({"details": "invalid ID"}, 404)
+        return make_response({"details": "Invalid ID"}, 404)
 
     db.session.delete(card)
     db.session.commit()
-
-    return make_response({"details": f"Card with {card_id} has been deleted."}, 200)
+    return {"details": f"Card with ID #{card_id} has been deleted."}
+    #return make_response({"details": f"Card with ID #{card_id} has been deleted."}, 200) -- original
 
 
 ## LC standup notes: unsolicited additions (marked below): sorting boards when GETting them, updating a board, deleting board(s) -- can remove if it doesnt make sense for front end
-
-
 
 
 ######### LAC ADDITIONS BELOW #########
@@ -111,17 +93,19 @@ def create_board():
     request_body = request.get_json()
 
     if "title" not in request_body or "owner" not in request_body:
-        return make_response({"details": "Invalid data. Must include both title and owner name."}, 400) # dictated by tlapi tests!
+        return make_response({"details": "Invalid data. Must include both title and owner name."}, 400) # per instructions
     
     new_board = Board(title=request_body["title"],
                     owner=request_body["owner"])
 
     db.session.add(new_board)
     db.session.commit()
-    return jsonify(new_board.format_to_json()), 201
+    return {'board': new_board.format_to_json()}, 201
+    #return make_response({'board': new_board.format_to_json()}, 201) -- matches BP's orig
+    #return jsonify(new_board.format_to_json()), 201  -- original
 
 @board_bp.route("", methods=["GET"])
-def get_all_tasks():
+def get_all_boards():
     """Get all boards"""
     boards_ordered = request.args.get("sort") # sort the boards, unsolicited extra mini-feature - LC
 
@@ -148,7 +132,8 @@ def get_single_board(board_id):
 
     if not single_board:
         return make_response("", 404)
-    return jsonify(single_board.format_to_json()) # default 200 code okay? 
+    return {'board': single_board.format_to_json()}
+    #return jsonify({'board': single_board.format_to_json()}) -- original
 
 @board_bp.route("/<board_id>", methods=["PUT"]) # not in instructions but why couldnt we update a board?
 def update_single_board(board_id):
@@ -156,27 +141,28 @@ def update_single_board(board_id):
     board = Board.query.get(board_id)
 
     if not board:
-        return make_response("", 404)
+        return make_response({"details": "Invalid ID"}, 404)
 
     request_body = request.get_json()
     board.title = request_body["title"]
     board.owner = request_body["owner"]
 
     db.session.commit()
-    return jsonify(board.format_to_json())
+    return {'board': board.format_to_json()}
 
 @board_bp.route("/<board_id>", methods=["DELETE"]) # not in instructions, but on Simon's site
 def delete_single_board(board_id):
     """Delete specific board"""
     board = Board.query.get(board_id)
     if not board:
-        return make_response("", 404)
+        return make_response({"details": "Invalid ID"}, 404)
 
     db.session.delete(board)
     db.session.commit()
-    return make_response({"details": f'The "{board.title}" board has been deleted'}, 200)
+    return {"details": f"Board with ID #{board_id} has been deleted."}
 
 
+# ONE-TO-MANY ENDPOINTS
 
 ### Get all cards for a selected board 
 @board_bp.route("/<board_id>/cards", methods=["GET"])
@@ -185,7 +171,7 @@ def get_all_cards_for_board(board_id):
     board = Board.query.get(board_id)
 
     if board is None:
-        return make_response({"detais": "Invalid ID"}, 404)
+        return make_response({"details": "Invalid ID"}, 404)
 
     card_list = []
 
@@ -195,8 +181,26 @@ def get_all_cards_for_board(board_id):
             card_list.append(card)
     except: 
         return make_response({"details": "There are no associated cards for this board. "})
-
-    return jsonify(card_list), 200
-
+    return jsonify(card_list)
 
 
+
+### post a card to a specific board - LC
+@board_bp.route("/<board_id>/cards", methods=["POST"])
+def create_card_for_board(board_id):
+    relevant_board = Board.query.get(board_id) # board user will post card to
+
+    request_body = request.get_json() # user offers info for new card, {"message": "blah", "likes_count": 0}
+    new_card = Card.new_card_from_json(request_body) # instantiate new card w user data -- BP class method
+
+    if not new_card:
+        return make_response({"details": "Invalid Data"}, 400)
+    if len(new_card.message) > 40:
+        return make_response({"details": "Message must be 40 characters or less."}, 400)
+    db.session.add(new_card) 
+
+    # link to board
+    relevant_board.associated_cards.append(new_card) 
+    db.session.commit()
+
+    return {'card': new_card.to_json()}, 201
