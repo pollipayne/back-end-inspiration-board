@@ -2,7 +2,7 @@ from sqlalchemy.orm import backref
 from app import db
 
 class Board(db.Model):
-    __name__ = 'board'
+    __tablename__ = 'board'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     owner = db.Column(db.String)

@@ -13,8 +13,11 @@ from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
     # IF MSG MORE THAN 40 CHARS
     # IF BLANK CARD POST ATTEMPT
 
+#Completed 6.29 
 ### CREATE ENDPOINT boards/<board_id>/cards - get cards asso'd with specific board - BP
 ### +1 FEATURE (see rentals counter) - BP 
+
+
 
 # example_bp = Blueprint('example_bp', __name__)
 
@@ -23,7 +26,7 @@ board_bp = Blueprint("boards", __name__, url_prefix="/boards")
 
 # >>>>>>> CRUD FOR CARDS BELOW >>>>>>>>
 
-#GET requests/all cards for a single board (return a list of card dictionaries?)
+#GET requests/all cards (probably won't be needed)
 @card_bp.route("", methods=["GET"])
 def get_all_cards():
     cards = Card.query.all()
@@ -34,7 +37,8 @@ def get_all_cards():
         card_response.append(card.to_json())
     return jsonify(card_response), 200 
 
-# GET request for single card by id (in order to upvote)
+
+# GET request for single card by id (probably won't be needed)
 @card_bp.route("/<card_id>", methods=["GET"]) 
 def get_single_card(card_id):
     card = Card.query.get(card_id)
@@ -43,7 +47,6 @@ def get_single_card(card_id):
         return make_response({'details':"invalid ID"}, 404)
     
     return {'card': card.to_json()}
-
 
 
 
@@ -64,7 +67,7 @@ def update_single_card(card_id):
 
 
 
-# POST requests (create a new card for selected board)
+# POST requests - single card (probably won't be needed)
 @card_bp.route("", methods=["POST"])
 def post_new_card():
     request_body = request.get_json()
@@ -81,7 +84,7 @@ def post_new_card():
 
 
 
-#DELETE requests (delete an existing card )
+#DELETE requests (delete an existing card)
 @card_bp.route("/<card_id>", methods=["DELETE"])
 def delete_single_card(card_id):
 
@@ -95,7 +98,6 @@ def delete_single_card(card_id):
     return make_response({"details": f"Card with {card_id} has been deleted."}, 200)
 
 
-### notes for standup - figure out how to implement board relationship so we can select cards by the board id to only effect cards for the selected board. Get together with Lauren to determine a synchronized format for 404 responses, JSON data shape, etc. 
 ## LC standup notes: unsolicited additions (marked below): sorting boards when GETting them, updating a board, deleting board(s) -- can remove if it doesnt make sense for front end
 
 
