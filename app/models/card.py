@@ -22,5 +22,5 @@ class Card(db.Model):
 
     @classmethod
     def new_card_from_json(cls, body):
-        new_card = Card(message=body['message'], likes_count=body['likes_count'])
+        new_card = Card(message=body['message'], likes_count=0)
         return new_card
