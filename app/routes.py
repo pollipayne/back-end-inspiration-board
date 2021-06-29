@@ -34,7 +34,7 @@ def get_all_cards():
         card_response.append(card.to_json())
     return jsonify(card_response), 200 
 
-# GET request for single card by id (in order to delete? )
+# GET request for single card by id (in order to upvote)
 @card_bp.route("/<card_id>", methods=["GET"]) 
 def get_single_card(card_id):
     card = Card.query.get(card_id)
@@ -42,6 +42,24 @@ def get_single_card(card_id):
     if card is None:
         return make_response({'details':"invalid ID"}, 404)
     
+    return {'card': card.to_json()}
+
+
+
+
+#PUT FOR UPVOTES  request for single card by id && increase upvote count 
+@card_bp.route("/<card_id>/upvote", methods=["PUT"]) 
+def update_single_card(card_id):
+
+    card = Card.query.get(card_id)
+
+    if not card:
+        return make_response({"details": "Invalid ID"}, 404)
+
+
+    card.likes_count += 1
+
+    db.session.commit()
     return {'card': card.to_json()}
 
 
@@ -155,3 +173,28 @@ def delete_single_board(board_id):
     db.session.delete(board)
     db.session.commit()
     return make_response({"details": f'The "{board.title}" board has been deleted'}, 200)
+
+
+
+### Get all cards for a selected board 
+@board_bp.route("/<board_id>/cards", methods=["GET"])
+def get_all_cards_for_board(board_id):
+
+    board = Board.query.get(board_id)
+
+    if board is None:
+        return make_response({"detais": "Invalid ID"}, 404)
+
+    card_list = []
+
+    try:
+        for card in board.associated_cards: 
+            card = card.to_json()
+            card_list.append(card)
+    except: 
+        return make_response({"details": "There are no associated cards for this board. "})
+
+    return jsonify(card_list), 200
+
+
+
