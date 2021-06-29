@@ -1,3 +1,4 @@
+from sqlalchemy.orm import backref
 from app import db
 
 class Board(db.Model):
@@ -5,6 +6,7 @@ class Board(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     owner = db.Column(db.String)
+    associated_cards = db.relationship('Card', backref='card', lazy=True)
 
     def format_to_json(self):
         return {
