@@ -6,6 +6,16 @@ import requests
 import os 
 from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
 
+# 6.29.21 backend workflow
+### BUILD helper functions here: uniform make_response msg - LC 
+### UNIFORM ERROR MSGING 'board': dict details - LC converge towards BP format 
+### CREATE ENDPOINT POST card by board endpoint - LC
+    # IF MSG MORE THAN 40 CHARS
+    # IF BLANK CARD POST ATTEMPT
+
+### CREATE ENDPOINT boards/<board_id>/cards - get cards asso'd with specific board - BP
+### +1 FEATURE (see rentals counter) - BP 
+
 # example_bp = Blueprint('example_bp', __name__)
 
 card_bp = Blueprint("cards", __name__, url_prefix='/cards')
@@ -25,7 +35,7 @@ def get_all_cards():
     return jsonify(card_response), 200 
 
 # GET request for single card by id (in order to delete? )
-@card_bp.route("/<card_id>", methods=["GET"])
+@card_bp.route("/<card_id>", methods=["GET"]) 
 def get_single_card(card_id):
     card = Card.query.get(card_id)
 
@@ -100,7 +110,7 @@ def get_all_tasks():
     elif boards_ordered == "asc":
         boards = Board.query.order_by(asc(Board.title))
     elif boards_ordered == "desc":
-        boards = Board.query.order_by(desc(Board.title))
+        boards = Board.query.order_by(desc(Board.title)) # leave for now
 
     hold_boards = []
     if not boards:
