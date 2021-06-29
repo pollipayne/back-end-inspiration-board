@@ -24,6 +24,15 @@ def get_all_cards():
         card_response.append(card.to_json())
     return jsonify(card_response), 200 
 
+# GET request for single card by id (in order to delete? )
+@card_bp.route("/<card_id>", methods=["GET"])
+def get_single_card(card_id):
+    card = Card.query.get(card_id)
+
+    if card is None:
+        return make_response({'details':"invalid ID"}, 404)
+    
+    return {'card': card.to_json()}
 
 
 
@@ -44,6 +53,18 @@ def post_new_card():
 
 
 
-
 #DELETE requests (delete an existing card )
+@card_bp.route("/<card_id>", methods=["DELETE"])
+def delete_single_card(card_id):
 
+    card = Card.query.get(card_id)
+    if card is None:
+        return make_response({"error": "invalid ID"}, 404)
+
+    db.session.delete(card)
+    db.session.commit()
+
+    return make_response({"details": f"Card with {card_id} has been deleted."}, 200)
+
+
+### notes for standup - figure out how to implement board relationship so we can select cards by the board id to only effect cards for the selected board. Get together with Lauren to determine a synchronized format for 404 responses, JSON data shape, etc. 
