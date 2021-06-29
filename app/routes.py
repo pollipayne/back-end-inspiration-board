@@ -59,7 +59,7 @@ def delete_single_card(card_id):
 
     card = Card.query.get(card_id)
     if card is None:
-        return make_response({"error": "invalid ID"}, 404)
+        return make_response({"details": "invalid ID"}, 404)
 
     db.session.delete(card)
     db.session.commit()
