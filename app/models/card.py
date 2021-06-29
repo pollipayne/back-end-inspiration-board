@@ -1,6 +1,5 @@
 from app import db
 
-
 class Card(db.Model):
     __name__ = 'card'
     id = db.Column(db.Integer, primary_key=True)

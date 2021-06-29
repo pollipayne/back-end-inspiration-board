@@ -18,16 +18,14 @@ def create_app():
         "SQLALCHEMY_DATABASE_URI")
 
     # Import models here for Alembic setup
-    # from app.models.ExampleModel import ExampleModel
-    from app.models.board import Board
-    from app.models.card import Card
+    from app.models.board import Board # - LC add
+    from .routes import board_bp # - LC add
 
     db.init_app(app)
     migrate.init_app(app, db)
 
     # Register Blueprints here
-    # from .routes import example_bp
-    # app.register_blueprint(example_bp)
+    app.register_blueprint(board_bp) # - LC add
 
     CORS(app)
     return app
