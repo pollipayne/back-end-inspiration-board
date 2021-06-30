@@ -1,3 +1,4 @@
+from app.models.board import Board
 import pytest
 from app import create_app
 from app import db
@@ -40,3 +41,45 @@ def three_cards(app):
     db.session.commit()
 
 
+
+
+
+
+
+# BOARD fixtures below
+
+# This fixture gets called in every test that references "one_board"
+# This fixture creates a goal and saves it in the database
+@pytest.fixture
+def one_board(app):
+    new_board = Board(title="Build a habit of going outside daily", owner="LAC")
+    db.session.add(new_board)
+    db.session.commit()
+
+# This fixture gets called in every test that references "three_boards"
+# This fixture creates three boards and saves them in the database
+@pytest.fixture
+def three_boards(app):
+    db.session.add_all([
+        Board(
+            title="Pensive board", owner="KFC"),
+        Board(
+            title="Bored board", owner="QAB"),
+        Board(
+            title="Happy board", owner="ANA")
+    ])
+    db.session.commit()
+
+
+
+
+# ONE-TO-MANY fixtures below
+
+# This fixture gets called in every test that references "one_card_belongs_to_one_board"
+# This fixture creates a card and a board, associates them such that task belongs to goal
+@pytest.fixture
+def one_card_belongs_to_one_board(app, one_card, one_board):
+    card = Card.query.first()
+    board = Board.query.first()
+    board.associated_cards.append(card) # correct?
+    db.session.commit()
