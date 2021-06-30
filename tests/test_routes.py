@@ -109,6 +109,22 @@ def test_upvote_card_not_found(client):
     #assert 
     assert response.status_code == 404
     assert response_body == {"details": "Invalid ID"}
+    
+
+def test_update_single_card(client, three_cards):
+    #act
+    response = client.put("cards/3", json={"message": "updated message"})
+    response_body = response.get_json()
+
+    #assert 
+    assert response.status_code == 201
+    assert "card" in response_body
+    assert response_body == {"card": {
+        "id": 3,
+        "message": "updated message",
+        "likes_count": 0,
+        "board_id": None
+    }}
 
 
 # LC test adds 
