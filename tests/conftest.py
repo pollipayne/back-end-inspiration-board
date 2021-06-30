@@ -46,7 +46,7 @@ def three_cards(app):
 # This fixture creates a board and saves to DB 
 @pytest.fixture
 def one_board(app):
-    new_board = Board(title="Build a habit of going outside daily", owner="LAC")
+    new_board = Board(title="Wild Board", owner="LAC")
     db.session.add(new_board)
     db.session.commit()
 
@@ -54,9 +54,9 @@ def one_board(app):
 @pytest.fixture
 def three_boards(app):
     db.session.add_all([
-        Board(title="Pensive board", owner="KFC"),
-        Board(title="Bored board", owner="QAB"),
-        Board(title="Happy board", owner="ANA")])
+        Board(title="Pensive Board", owner="KFC"),
+        Board(title="Bored Board", owner="QAB"),
+        Board(title="Happy Board", owner="ANA")])
     db.session.commit()
 
 
