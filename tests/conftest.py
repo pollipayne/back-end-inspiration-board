@@ -27,7 +27,7 @@ def client(app):
 @pytest.fixture
 def one_card(app):
     new_card = Card(
-        message="Noodles are the best."
+        message="Noodles are the best.", likes_count=0
     )
     db.session.add(new_card)
     db.session.commit()
@@ -35,7 +35,7 @@ def one_card(app):
 # This fixture creates multiple cards and saves to DB 
 @pytest.fixture
 def three_cards(app):
-    db.session.add_all([Card( message="Hey, you're awesome"), Card(message="Where are my glasses?"), Card(message="Something inspirational")])
+    db.session.add_all([Card( message="Hey, you're awesome", likes_count=0), Card(message="Where are my glasses?", likes_count=0), Card(message="Something inspirational", likes_count=0)])
 
     db.session.commit()
 

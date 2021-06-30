@@ -60,6 +60,8 @@ def post_new_card():
         new_card = Card.new_card_from_json(request_body)
     except KeyError: 
         return make_response({"details": "Invalid ID"}, 404)
+    if len(new_card.message) > 40:
+        return make_response({"details": "Message must be 40 characters or less."})
     
     db.session.add(new_card)
     db.session.commit()
