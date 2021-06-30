@@ -6,7 +6,7 @@ class Card(db.Model):
     __tablename__ = 'card'
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(40), nullable=False)
-    likes_count = db.Column(db.Integer)
+    likes_count = db.Column(db.Integer, default=0)
     board_id = db.Column(db.Integer, db.ForeignKey('board.id'), nullable=True) # 'board.id' bc Board attr is 'id'
 
 
@@ -24,5 +24,5 @@ class Card(db.Model):
 
     @classmethod
     def new_card_from_json(cls, body):
-        new_card = Card(message=body['message'], likes_count=0)
+        new_card = Card(message=body['message'])
         return new_card
