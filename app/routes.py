@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify, make_response
-from app import db
+from app import db, app
 from app.models.card import Card
 from app.models.board import Board 
 import requests
 import os 
 from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
+
 
 card_bp = Blueprint("cards", __name__, url_prefix='/cards')
 board_bp = Blueprint("boards", __name__, url_prefix="/boards")
@@ -187,8 +188,9 @@ def get_all_cards_for_board(board_id):
     return jsonify(card_list)
 
 ### post a card to a specific board - LC
-@board_bp.route("/<board_id>/cards", methods=["POST"])
+@board_bp.route("/<board_id>/cards", methods=["POST"]) # deploy req caught here, logic's not running -Chris
 def create_card_for_board(board_id):
+    app.logger.info('Processing default request!!!')
     board_id = int(board_id)
     hold_card_ids = []
     relevant_board = Board.query.get(board_id) # board user will post card to
