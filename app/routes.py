@@ -37,7 +37,7 @@ def get_single_card(card_id):
 
 #PUT FOR UPVOTES  request for single card by id && increase upvote count 
 @card_bp.route("/<card_id>/upvote", methods=["PUT"]) 
-def update_single_card(card_id):
+def upvote_single_card(card_id):
 
     card = Card.query.get(card_id)
 
@@ -50,7 +50,24 @@ def update_single_card(card_id):
     db.session.commit()
     return {'card': card.to_json()}
 
+#PUT for UPDATE update single card 
+@card_bp.route("/<card_id>", methods=["PUT"])
+def update_single_card(card_id):
+    request_body = request.get_json()
 
+    card = Card.query.get(card_id)
+    
+
+    if not card:
+        return make_response({"details": "Invalid ID"}, 404)
+
+    card.message = request_body["message"]
+
+    db.session.add(card)
+    db.session.commit()
+    return {'card': card.to_json()}, 201
+
+    
 
 # POST requests - single card (probably won't be needed)
 @card_bp.route("", methods=["POST"])
