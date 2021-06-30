@@ -32,6 +32,48 @@ def test_get_cards_one_saved_card(client, one_card):
         }
     ]
 
+def test_get_cards_three_saved_cards(client, three_cards):
+    #act
+    response = client.get('/cards')
+    response_body = response.get_json()
+
+    #assert 
+    assert response.status_code == 200 
+    assert len(response_body)  == 3
+    assert response_body == [
+        {
+        "id": 1, 
+        "message": "Hey, you're awesome",
+        "likes_count": 0,
+        "board_id": None
+
+    },{
+        "id": 2, 
+        "message": "Where are my glasses?",
+        "likes_count": 0,
+        "board_id": None
+    }, {
+        "id": 3, 
+        "message": "Something inspirational",
+        "likes_count": 0,
+        "board_id": None
+    } 
+    ]
+
+
+def test_delete_card_three_saved_cards(client, three_cards):
+    #act
+    response = client.delete("/cards/3")
+    response_body = response.get_json()
+    check_for_deletion = client.get("/cards")
+    check_response_body = check_for_deletion.get_json()
+
+
+    #assert
+    assert response.status_code == 200 
+    assert len(check_response_body) == 2
+    assert response_body == {"details": "Card with ID #3 has been deleted."}
+
 
 def test_get_card_not_found(client):
     #act
