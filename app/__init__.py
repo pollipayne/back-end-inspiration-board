@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
-from flask_cors import CORS # comment out 6 and 41 to run test in question
+from flask_cors import CORS
 
 db = SQLAlchemy()
 migrate = Migrate()

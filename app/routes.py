@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, make_response
 from app import db
 from app.models.card import Card
 from app.models.board import Board 
-import json #
 import requests
 import os 
 from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
@@ -96,7 +95,8 @@ def create_board():
     request_body = request.get_json()
 
     if "title" not in request_body or "owner" not in request_body:
-        return make_response({"details": "Invalid data. Must include both title and owner name."}, 400) # per instructions
+        return make_response({"details": "Invalid data"}, 400)
+        # changed for tests: return make_response({"details": "Invalid data. Must include both title and owner name."}, 400) # per instructions
     
     new_board = Board(title=request_body["title"],
                     owner=request_body["owner"])
@@ -189,6 +189,8 @@ def get_all_cards_for_board(board_id):
 ### post a card to a specific board - LC
 @board_bp.route("/<board_id>/cards", methods=["POST"])
 def create_card_for_board(board_id):
+    board_id = int(board_id)
+    hold_card_ids = []
     relevant_board = Board.query.get(board_id) # board user will post card to
 
     request_body = request.get_json() # user offers info for new card, {"message": "blah", "likes_count": 0}
@@ -204,9 +206,16 @@ def create_card_for_board(board_id):
 
     # link to board
     relevant_board.associated_cards.append(new_card)
-    print('NUM: ', len(relevant_board.associated_cards)) # 11, or num of items in asso_card list
-    print('ITSELF: ', relevant_board.associated_cards) # list of Card objs [<Card 6>, <Card 7>, <Card 8>, <Card 10>, <Card 11>, <Card 12>, <Card 13>, <Card 14>, <Card 15>, <Card 16>, <Card 17>, <Card 18>]
+    print('NUM: ', len(relevant_board.associated_cards)) # num of items in asso_card list
+    print('ITSELF: ', relevant_board.associated_cards) # list of Card objs [<Card 6>, <Card 7>, <Card 8>...]
+    print('can we see it: ', new_card.id) # actual ID! i.e. 34
     
+    for card in relevant_board.associated_cards:
+        #print('what we want: ', card.id)
+        hold_card_ids.append(card.id)
+    #print("ASSO'D CARD IDS: ", hold_card_ids)
+
     db.session.commit()
 
-    return {'card': new_card.to_json()}, 201
+    #return {'card': new_card.to_json()}, 201 >>> shows the card that was successfully posted
+    return make_response({"id": board_id, "associated_card_ids": hold_card_ids}, 201) # shows the list of ids for arbit test >>> or 200; tlapi test called for 200
