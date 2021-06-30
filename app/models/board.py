@@ -13,6 +13,6 @@ class Board(db.Model):
         return {
                 "id": self.id, 
                 "title": self.title,
-                "owner": self.owner,
-                "associated_cards": self.associated_cards 
+                "owner": self.owner #,
+                #"associated_cards": self.associated_cards 
             }

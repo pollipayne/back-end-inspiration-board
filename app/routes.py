@@ -165,7 +165,7 @@ def update_single_board(board_id):
     board.title = request_body["title"]
     board.owner = request_body["owner"]
 
-    db.session.commit()
+    db.session.commit() 
     return {'board': board.format_to_json()}
 
 @board_bp.route("/<board_id>", methods=["DELETE"]) # not in instructions, but on Simon's site
