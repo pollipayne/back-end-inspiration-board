@@ -1,8 +1,6 @@
 from flask.wrappers import Response
 from app.models.card import Card 
 from app.models.board import Board
-import unittest # may not need - LC
-from unittest.mock import Mock, patch # may not need - LC
 
 
 def test_get_all_cards_no_saved_cards(client):
@@ -114,8 +112,6 @@ def test_upvote_card_not_found(client):
 
 
 # LC test adds 
-
-# test_get_all_boards_no_boards_created
 def test_get_boards_no_saved_boards(client):
     # Act
     response = client.get("/boards")
@@ -125,7 +121,6 @@ def test_get_boards_no_saved_boards(client):
     assert response.status_code == 200
     assert response_body == []
 
-# test_get_all_boards_one_board_created
 def test_get_boards_one_saved_board(client, one_board):
     # Act
     response = client.get("/boards")
@@ -136,13 +131,13 @@ def test_get_boards_one_saved_board(client, one_board):
     assert len(response_body) == 1
     assert response_body == [
         {
-            "id": 1, # ID included on task list tests, okay to replicate?
+            "id": 1,
             "title": "Build a habit of going outside daily",
-            "owner": "LAC"
+            "owner": "LAC",
+            "associated_cards": [] # should this be here??
             }
     ]
 
-# test_get_single_board
 def test_get_board(client, one_board):
     # Act
     response = client.get("/boards/1")
@@ -155,11 +150,11 @@ def test_get_board(client, one_board):
         "board": {
             "id": 1,
             "title": "Build a habit of going outside daily",
-            "owner": "LAC"
+            "owner": "LAC",
+            "associated_cards": [] # should this be here??
             }
     }
 
-# test_get_single_board_doesnt_exist
 def test_get_board_not_found(client):
     # Act
     response = client.get("/boards/1")
@@ -169,14 +164,9 @@ def test_get_board_not_found(client):
     assert response.status_code == 404
     assert response_body == None
 
-# test_create_board
-    # redundant? 
-
-#CHECK POST BOARD ROUTES TO SEE THAT THESE PASS
-# test_create_board_missing_title
 def test_create_board_must_contain_title(client):
     # Act
-    response = client.post("/boards", json={ # client offers board post attempt without title
+    response = client.post("/boards", json={
                 "owner": "Test owner name"
             })
     response_body = response.get_json()
@@ -187,12 +177,11 @@ def test_create_board_must_contain_title(client):
     assert response_body == {
         "details": "Invalid data"
     }
-    assert Board.query.all() == [] # should not populate bc incorrectly submitted
+    assert Board.query.all() == []
 
-# test_create_board_missing_owner  >>> necessary? allowing anon submissions?
 def test_create_board_must_contain_owner(client): 
     # Act
-    response = client.post("/boards", json={ # client offers board post attempt without owner
+    response = client.post("/boards", json={
                 "title": "Test title"
             })
     response_body = response.get_json()
@@ -205,34 +194,41 @@ def test_create_board_must_contain_owner(client):
     }
     assert Board.query.all() == []
 
-# UNFINSIHED BELOW - LC, 6.29, 11:50pm
-# test_post_card_to_board (make sure data populates to associated_cards attr in Board table)
-# How-To??
-def test_post_card_to_board(client, one_board, three_cards):
+# following tests check that: card(s) exist(s), that they belong to right board, that the asso'card list lengthens w each addtl card
+def test_post_card_to_board_no_cards(client, one_board, one_card): 
     # Act
-    response = client.post("/boards/1/cards", json={ # "boards/<board_id>/cards"
-        "message": "Test message", # bc Card class method, offered as request_body in route
-        "likes_count": 0
-        #"associated_card_ids": [1, 2, 3] # this is not a Card attr
+    response = client.post("/boards/1/cards", json={
+        "message": "Test message"
     })
 
-    response_body = response.get_json()
-    print('EYYE: ', response_body) # EYYE: {'associated_card_ids': [4], 'id': 1}
+    response_body = response.get_json() # {'card': {'board_id': 1, 'id': 4, 'likes_count': 0, 'message': 'Test message'}}
+
+    associated_board = Board.query.get(response_body["card"]["board_id"]) # {'id': 1, 'title': 'Build a habit of going outside daily', 'owner': 'LAC', 'associated_cards': [<Card 4>]}
+    associated_board = associated_board.format_to_json() 
+    
+    # Assert
+    assert response.status_code == 201
+    assert bool(response_body) == True
+    assert response_body["card"]["board_id"] == associated_board["id"]
+    assert "card" in response_body
+
+def test_post_card_to_board_already_with_cards(client, one_card_belongs_to_one_board, three_cards):
+    # Act
+    response = client.post("/boards/1/cards", json={
+        "message": "Test message"
+        })
+
+    response_body = response.get_json() # {'card': {'board_id': 1, 'id': 5, 'likes_count': 0, 'message': 'Test message'}}
+
+    associated_board = Board.query.get(response_body["card"]["board_id"]) 
+    associated_board = associated_board.format_to_json() # {'id': 1, 'title': 'Build a habit of going outside daily', 'owner': 'LAC', 'associated_cards': [<Card 1>, <Card 5>]}
 
     # Assert
     assert response.status_code == 201
-    assert "id" in response_body # as in board id
-    assert "associated_card_ids" in response_body
-    assert response_body == {
-        "id": 1,
-        "associated_card_ids": [1, 2, 3]
-    }
-
-    # Check that board column was updated in the db
-    assert len(Board.query.get(1).associated_cards) == 3
-
-# test_post_card_to_board_that_already_has_cards ("", properly adding to list)
-    # HOW-TO?
+    assert len(associated_board["associated_cards"]) == 2
+    assert bool(response_body) == True
+    assert response_body["card"]["board_id"] == associated_board["id"] 
+    assert "card" in response_body
 
 # IF ENDPOINT'S KEPT/THERE'S TIME
     # test_update_board

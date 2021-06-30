@@ -36,50 +36,34 @@ def one_card(app):
 # This fixture creates multiple cards and saves to DB 
 @pytest.fixture
 def three_cards(app):
-    db.session.add_all([Card( message="Hey, you're awesome"), Card(message="Where are my glasses?"), Card(message="Something inspirational")])
+    db.session.add_all([Card( message="Hey, you're awesome"), 
+                        Card(message="Where are my glasses?"), 
+                        Card(message="Something inspirational")])
 
     db.session.commit()
 
 
-
-
-
-
-
-# BOARD fixtures below
-
-# This fixture gets called in every test that references "one_board"
-# This fixture creates a board and saves it in the database
+# This fixture creates a board and saves to DB 
 @pytest.fixture
 def one_board(app):
     new_board = Board(title="Build a habit of going outside daily", owner="LAC")
     db.session.add(new_board)
     db.session.commit()
 
-# This fixture gets called in every test that references "three_boards"
-# This fixture creates three boards and saves them in the database
+# This fixture creates several boards and saves to DB 
 @pytest.fixture
 def three_boards(app):
     db.session.add_all([
-        Board(
-            title="Pensive board", owner="KFC"),
-        Board(
-            title="Bored board", owner="QAB"),
-        Board(
-            title="Happy board", owner="ANA")
-    ])
+        Board(title="Pensive board", owner="KFC"),
+        Board(title="Bored board", owner="QAB"),
+        Board(title="Happy board", owner="ANA")])
     db.session.commit()
 
 
-
-
-# ONE-TO-MANY fixtures below
-
-# This fixture gets called in every test that references "one_card_belongs_to_one_board"
-# This fixture creates a card and a board, associates them such that task belongs to goal
+# This fixture connects a card to the appropriate board and saves to DB
 @pytest.fixture
 def one_card_belongs_to_one_board(app, one_card, one_board):
     card = Card.query.first()
     board = Board.query.first()
-    board.associated_cards.append(card) # correct?
+    board.associated_cards.append(card)
     db.session.commit()

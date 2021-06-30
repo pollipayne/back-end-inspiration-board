@@ -1,3 +1,4 @@
+from abc import abstractstaticmethod
 from sqlalchemy.orm import backref
 from app import db
 
@@ -12,5 +13,6 @@ class Board(db.Model):
         return {
                 "id": self.id, 
                 "title": self.title,
-                "owner": self.owner
+                "owner": self.owner,
+                "associated_cards": self.associated_cards 
             }

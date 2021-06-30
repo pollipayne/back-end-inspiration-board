@@ -6,6 +6,7 @@ import requests
 import os 
 from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
 
+
 card_bp = Blueprint("cards", __name__, url_prefix='/cards')
 board_bp = Blueprint("boards", __name__, url_prefix="/boards")
 
@@ -82,9 +83,6 @@ def delete_single_card(card_id):
     db.session.commit()
     return {"details": f"Card with ID #{card_id} has been deleted."}
     #return make_response({"details": f"Card with ID #{card_id} has been deleted."}, 200) -- original
-
-
-## LC standup notes: unsolicited additions (marked below): sorting boards when GETting them, updating a board, deleting board(s) -- can remove if it doesnt make sense for front end
 
 
 ######### LAC ADDITIONS BELOW #########
@@ -166,7 +164,6 @@ def delete_single_board(board_id):
 
 
 # ONE-TO-MANY ENDPOINTS
-
 ### Get all cards for a selected board 
 @board_bp.route("/<board_id>/cards", methods=["GET"])
 def get_all_cards_for_board(board_id):
@@ -190,32 +187,24 @@ def get_all_cards_for_board(board_id):
 @board_bp.route("/<board_id>/cards", methods=["POST"])
 def create_card_for_board(board_id):
     board_id = int(board_id)
+    relevant_board = Board.query.get(board_id)
     hold_card_ids = []
-    relevant_board = Board.query.get(board_id) # board user will post card to
 
-    request_body = request.get_json() # user offers info for new card, {"message": "blah", "likes_count": 0}
-    new_card = Card.new_card_from_json(request_body) # instantiate new card w user data -- BP class method
+    request_body = request.get_json()
+    new_card = Card.new_card_from_json(request_body)
     
-    # from: https://github.com/Ada-C15/full-stack-inspiration-board/blob/main/project-requirements.md 
-    # ' See an error message if I try to make a new card with an empty/blank/invalid/missing "message." '
-    if not new_card.message: # check to see that actual msg field is empty
+    if not new_card.message:
         return make_response({"details": "Invalid Data"}, 400)
-    if len(new_card.message) > 40: # check to see that msg field has more than 40 chars
+    if len(new_card.message) > 40:
         return make_response({"details": "Message must be 40 characters or less."}, 400)
     db.session.add(new_card) 
 
     # link to board
     relevant_board.associated_cards.append(new_card)
-    print('NUM: ', len(relevant_board.associated_cards)) # num of items in asso_card list
-    print('ITSELF: ', relevant_board.associated_cards) # list of Card objs [<Card 6>, <Card 7>, <Card 8>...]
-    print('can we see it: ', new_card.id) # actual ID! i.e. 34
     
     for card in relevant_board.associated_cards:
-        #print('what we want: ', card.id)
         hold_card_ids.append(card.id)
-    #print("ASSO'D CARD IDS: ", hold_card_ids)
-
     db.session.commit()
 
-    #return {'card': new_card.to_json()}, 201 >>> shows the card that was successfully posted
-    return make_response({"id": board_id, "associated_card_ids": hold_card_ids}, 201) # shows the list of ids for arbit test >>> or 200; tlapi test called for 200
+    return {'card': new_card.to_json()}, 201 # >>> shows the card that was successfully posted
+    #return make_response({"id": board_id, "associated_card_ids": hold_card_ids}, 201) # shows the list of ids for arbit test >>> or 200; tlapi test called for 200
