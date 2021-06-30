@@ -28,7 +28,7 @@ def client(app):
 @pytest.fixture
 def one_card(app):
     new_card = Card(
-        message="Noodles are the best.", likes_count=0
+        message="Noodles are the best."
     )
     db.session.add(new_card)
     db.session.commit()
@@ -36,7 +36,7 @@ def one_card(app):
 # This fixture creates multiple cards and saves to DB 
 @pytest.fixture
 def three_cards(app):
-    db.session.add_all([Card( message="Hey, you're awesome", likes_count=0), Card(message="Where are my glasses?", likes_count=0), Card(message="Something inspirational", likes_count=0)])
+    db.session.add_all([Card( message="Hey, you're awesome"), Card(message="Where are my glasses?"), Card(message="Something inspirational")])
 
     db.session.commit()
 
@@ -49,7 +49,7 @@ def three_cards(app):
 # BOARD fixtures below
 
 # This fixture gets called in every test that references "one_board"
-# This fixture creates a goal and saves it in the database
+# This fixture creates a board and saves it in the database
 @pytest.fixture
 def one_board(app):
     new_board = Board(title="Build a habit of going outside daily", owner="LAC")
