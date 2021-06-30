@@ -132,12 +132,40 @@ def test_get_boards_one_saved_board(client, one_board):
     assert response_body == [
         {
             "id": 1,
-            "title": "Build a habit of going outside daily",
+            "title": "Wild Board",
             "owner": "LAC",
-            "associated_cards": [] # should this be here??
+            "associated_cards": []
             }
     ]
 
+def test_get_boards_three_saved_boards(client, three_boards):
+    #act
+    response = client.get('/boards')
+    response_body = response.get_json()
+
+    #assert 
+    assert response.status_code == 200 
+    assert len(response_body)  == 3
+    assert response_body == [
+        {
+            "id": 1,
+            "title": "Pensive Board",
+            "owner": "KFC",
+            "associated_cards": []
+            },
+            {
+            "id": 2,
+            "title": "Bored Board",
+            "owner": "QAB",
+            "associated_cards": []
+            }, {
+            "id": 3,
+            "title": "Happy Board",
+            "owner": "ANA",
+            "associated_cards": []
+            } 
+    ]
+#############
 def test_get_board(client, one_board):
     # Act
     response = client.get("/boards/1")
@@ -149,7 +177,7 @@ def test_get_board(client, one_board):
     assert response_body == {
         "board": {
             "id": 1,
-            "title": "Build a habit of going outside daily",
+            "title": "Wild Board",
             "owner": "LAC",
             "associated_cards": [] # should this be here??
             }
