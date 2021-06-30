@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response
-from app import db, app
+from app import db
 from app.models.card import Card
 from app.models.board import Board 
 import requests
@@ -85,9 +85,6 @@ def delete_single_card(card_id):
     #return make_response({"details": f"Card with ID #{card_id} has been deleted."}, 200) -- original
 
 
-## LC standup notes: unsolicited additions (marked below): sorting boards when GETting them, updating a board, deleting board(s) -- can remove if it doesnt make sense for front end
-
-
 ######### LAC ADDITIONS BELOW #########
 # BOARD CRUD ROUTES - LC
 @board_bp.route("", methods=["POST"])
@@ -167,7 +164,6 @@ def delete_single_board(board_id):
 
 
 # ONE-TO-MANY ENDPOINTS
-
 ### Get all cards for a selected board 
 @board_bp.route("/<board_id>/cards", methods=["GET"])
 def get_all_cards_for_board(board_id):
@@ -188,19 +184,18 @@ def get_all_cards_for_board(board_id):
     return jsonify(card_list)
 
 ### post a card to a specific board - LC
-@board_bp.route("/<board_id>/cards", methods=["POST"]) # deploy req caught here, logic's not running -Chris
+@board_bp.route("/<board_id>/cards", methods=["POST"])
 def create_card_for_board(board_id):
-    app.logger.info('Processing default request!!!')
     board_id = int(board_id)
+    relevant_board = Board.query.get(board_id)
     hold_card_ids = []
-    relevant_board = Board.query.get(board_id) # board user will post card to
 
-    request_body = request.get_json() # user offers info for new card, {"message": "blah", "likes_count": 0}
-    new_card = Card.new_card_from_json(request_body) # instantiate new card w user data -- BP class method
+    request_body = request.get_json()
+    new_card = Card.new_card_from_json(request_body)
     
-    if not new_card.message: # check to see that actual msg field is empty
+    if not new_card.message:
         return make_response({"details": "Invalid Data"}, 400)
-    if len(new_card.message) > 40: # check to see that msg field has more than 40 chars
+    if len(new_card.message) > 40:
         return make_response({"details": "Message must be 40 characters or less."}, 400)
     db.session.add(new_card) 
 
