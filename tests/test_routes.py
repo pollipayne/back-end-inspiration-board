@@ -69,3 +69,22 @@ def test_upvote_card_not_found(client):
     assert response_body == {"details": "Invalid ID"}
 
 
+# LC test adds 
+
+# test_get_all_boards_no_boards_created
+# test_get_all_boards_one_board_created
+# test_get_single_board
+# test_get_board_doesnt_exist
+# test_create_board
+# test_create_board_missing_title
+# test_create_board_missing_owner  >>> necessary?
+# test_post_card_to_board (make sure data populates to associated_board attr in Card table)
+# test_post_card_to_board_that_already_has_cards ("", properly adding to list)
+
+# IF ENDPOINT'S KEPT/THERE'S TIME
+    # test_update_board
+    # test_update_board_doesnt_exist
+    # test_delete_board
+    # test_delete_board_doesnt_exist
+    # test get_boards_sorted_asc
+    # test get_boards_sorted_desc
