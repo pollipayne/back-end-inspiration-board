@@ -21,7 +21,7 @@ def get_all_cards():
 
     for card in cards:
         card_response.append(card.to_json())
-    return jsonify(card_response) # took off 200, bc default status code - LC
+    return jsonify(card_response) 
 
 
 # GET request for single card by id (probably won't be needed)
@@ -70,21 +70,21 @@ def update_single_card(card_id):
     
 
 # POST requests - single card (probably won't be needed)
-@card_bp.route("", methods=["POST"])
-def post_new_card():
-    request_body = request.get_json()
+# @card_bp.route("", methods=["POST"])
+# def post_new_card():
+#     request_body = request.get_json()
 
-    try:
-        new_card = Card.new_card_from_json(request_body)
-    except KeyError: 
-        return make_response({"details": "Invalid ID"}, 404)
-    if len(new_card.message) > 40:
-        return make_response({"details": "Message must be 40 characters or less."})
+#     try:
+#         new_card = Card.new_card_from_json(request_body)
+#     except KeyError: 
+#         return make_response({"details": "Invalid ID"}, 404)
+#     if len(new_card.message) > 40:
+#         return make_response({"details": "Message must be 40 characters or less."})
     
-    db.session.add(new_card)
-    db.session.commit()
-    return {'card': new_card.to_json()}, 201
-    #return make_response({'card': new_card.to_json()}, 201) -- original
+#     db.session.add(new_card)
+#     db.session.commit()
+#     return {'card': new_card.to_json()}, 201
+    return make_response({'card': new_card.to_json()}, 201) -- original
 
 
 
