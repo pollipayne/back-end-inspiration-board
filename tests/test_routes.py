@@ -222,16 +222,15 @@ def test_create_board_must_contain_owner(client):
     }
     assert Board.query.all() == []
 
-# following tests check that: card(s) exist(s), that they belong to right board, that the asso'card list lengthens w each addtl card
 def test_post_card_to_board_no_cards(client, one_board, one_card): 
     # Act
     response = client.post("/boards/1/cards", json={
         "message": "Test message"
     })
 
-    response_body = response.get_json() # {'card': {'board_id': 1, 'id': 4, 'likes_count': 0, 'message': 'Test message'}}
+    response_body = response.get_json() 
 
-    associated_board = Board.query.get(response_body["card"]["board_id"]) # {'id': 1, 'title': 'Build a habit of going outside daily', 'owner': 'LAC', 'associated_cards': [<Card 4>]}
+    associated_board = Board.query.get(response_body["card"]["board_id"]) 
     associated_board = associated_board.format_to_json() 
     
     # Assert
@@ -246,10 +245,10 @@ def test_post_card_to_board_already_with_cards(client, one_card_belongs_to_one_b
         "message": "Test message"
         })
 
-    response_body = response.get_json() # {'card': {'board_id': 1, 'id': 5, 'likes_count': 0, 'message': 'Test message'}}
+    response_body = response.get_json() 
 
     associated_board = Board.query.get(response_body["card"]["board_id"]) 
-    associated_board = associated_board.format_to_json() # {'id': 1, 'title': 'Build a habit of going outside daily', 'owner': 'LAC', 'associated_cards': [<Card 1>, <Card 5>]}
+    associated_board = associated_board.format_to_json()
 
     # Assert
     assert response.status_code == 201
@@ -258,10 +257,3 @@ def test_post_card_to_board_already_with_cards(client, one_card_belongs_to_one_b
     assert response_body["card"]["board_id"] == associated_board["id"] 
     assert "card" in response_body
 
-# IF ENDPOINT'S KEPT/THERE'S TIME
-    # test_update_board
-    # test_update_board_doesnt_exist
-    # test_delete_board
-    # test_delete_board_doesnt_exist
-    # test get_boards_sorted_asc
-    # test get_boards_sorted_desc

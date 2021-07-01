@@ -4,17 +4,17 @@ from app.models.card import Card
 from app.models.board import Board 
 import requests
 import os 
-from sqlalchemy import desc, asc # unsolicited board sorting functionality - LC
+
 
 
 card_bp = Blueprint("cards", __name__, url_prefix='/cards')
 board_bp = Blueprint("boards", __name__, url_prefix="/boards")
 
 # >>>>>>> CRUD FOR CARDS BELOW >>>>>>>>
-
-#GET requests/all cards (probably won't be needed)
 @card_bp.route("", methods=["GET"])
 def get_all_cards():
+    """A BE only endpoint to check on card functionality"""
+
     cards = Card.query.all()
 
     card_response = []
@@ -24,9 +24,10 @@ def get_all_cards():
     return jsonify(card_response) 
 
 
-# GET request for single card by id (probably won't be needed)
 @card_bp.route("/<card_id>", methods=["GET"]) 
 def get_single_card(card_id):
+    """Get a single card by ID"""
+
     card = Card.query.get(card_id)
 
     if card is None:
@@ -34,32 +35,32 @@ def get_single_card(card_id):
     return {'card': card.to_json()}
 
 
-
-#PUT FOR UPVOTES  request for single card by id && increase upvote count 
 @card_bp.route("/<card_id>/upvote", methods=["PUT"]) 
 def upvote_single_card(card_id):
+    """Upvote a single card by ID"""
 
     card = Card.query.get(card_id)
 
     if not card:
         return make_response({"details": "Invalid ID"}, 404)
-
 
     card.likes_count += 1
 
     db.session.commit()
     return {'card': card.to_json()}
 
-#PUT for UPDATE update single card 
+
 @card_bp.route("/<card_id>", methods=["PUT"])
 def update_single_card(card_id):
+    """Edit a single card by ID"""
     request_body = request.get_json()
 
     card = Card.query.get(card_id)
     
-
     if not card:
         return make_response({"details": "Invalid ID"}, 404)
+    if len(request_body["message"]) > 40:
+        return make_response({"details": "Message must be 40 characters or less."})
 
     card.message = request_body["message"]
 
@@ -68,28 +69,9 @@ def update_single_card(card_id):
     return {'card': card.to_json()}, 201
 
     
-
-# POST requests - single card (probably won't be needed)
-@card_bp.route("", methods=["POST"])
-def post_new_card():
-    request_body = request.get_json()
-
-    try:
-        new_card = Card.new_card_from_json(request_body)
-    except KeyError: 
-        return make_response({"details": "Invalid ID"}, 404)
-    if len(new_card.message) > 40:
-        return make_response({"details": "Message must be 40 characters or less."})
-    
-    db.session.add(new_card)
-    db.session.commit()
-    return {'card': new_card.to_json()}, 201
-
-
-
-#DELETE requests (delete an existing card)
 @card_bp.route("/<card_id>", methods=["DELETE"])
 def delete_single_card(card_id):
+    """Delete a single card by ID"""
 
     card = Card.query.get(card_id)
     if card is None:
@@ -98,11 +80,10 @@ def delete_single_card(card_id):
     db.session.delete(card)
     db.session.commit()
     return {"details": f"Card with ID #{card_id} has been deleted."}
-    #return make_response({"details": f"Card with ID #{card_id} has been deleted."}, 200) -- original
 
 
-######### LAC ADDITIONS BELOW #########
-# BOARD CRUD ROUTES - LC
+
+# >>>>>>> CRUD FOR BOARDS BELOW >>>>>>>>
 @board_bp.route("", methods=["POST"])
 def create_board():
     """Create a board for cards to be posted on"""
@@ -110,28 +91,19 @@ def create_board():
 
     if "title" not in request_body or "owner" not in request_body:
         return make_response({"details": "Invalid data"}, 400)
-        # changed for tests: return make_response({"details": "Invalid data. Must include both title and owner name."}, 400) # per instructions
-    
+
     new_board = Board(title=request_body["title"],
                     owner=request_body["owner"])
 
     db.session.add(new_board)
     db.session.commit()
     return {'board': new_board.format_to_json()}, 201
-    #return make_response({'board': new_board.format_to_json()}, 201) -- matches BP's orig
-    #return jsonify(new_board.format_to_json()), 201  -- original
+
 
 @board_bp.route("", methods=["GET"])
 def get_all_boards():
     """Get all boards"""
-    boards_ordered = request.args.get("sort") # sort the boards, unsolicited extra mini-feature - LC
-
-    if not boards_ordered:
-        boards = Board.query.all()
-    elif boards_ordered == "asc":
-        boards = Board.query.order_by(asc(Board.title))
-    elif boards_ordered == "desc":
-        boards = Board.query.order_by(desc(Board.title)) # leave for now
+    boards = Board.query.all()
 
     hold_boards = []
     if not boards:
@@ -141,33 +113,18 @@ def get_all_boards():
         hold_boards.append(board.format_to_json())
     return jsonify(hold_boards)
 
+
 @board_bp.route("/<board_id>", methods=["GET"])
 def get_single_board(board_id):
     """ Get single board and its data"""
-    
     single_board = Board.query.get(board_id)
 
     if not single_board:
         return make_response("", 404)
     return {'board': single_board.format_to_json()}
-    #return jsonify({'board': single_board.format_to_json()}) -- original
 
-@board_bp.route("/<board_id>", methods=["PUT"]) # not in instructions but why couldnt we update a board?
-def update_single_board(board_id):
-    """Overwrites a board with details provided by user"""
-    board = Board.query.get(board_id)
 
-    if not board:
-        return make_response({"details": "Invalid ID"}, 404)
-
-    request_body = request.get_json()
-    board.title = request_body["title"]
-    board.owner = request_body["owner"]
-
-    db.session.commit() 
-    return {'board': board.format_to_json()}
-
-@board_bp.route("/<board_id>", methods=["DELETE"]) # not in instructions, but on Simon's site
+@board_bp.route("/<board_id>", methods=["DELETE"]) 
 def delete_single_board(board_id):
     """Delete specific board"""
     board = Board.query.get(board_id)
@@ -179,8 +136,7 @@ def delete_single_board(board_id):
     return {"details": f"Board with ID #{board_id} has been deleted."}
 
 
-# ONE-TO-MANY ENDPOINTS
-### Get all cards for a selected board 
+# >>>>>>> ONE TO MANY ENDPOINTS BELOW >>>>>>>>
 @board_bp.route("/<board_id>/cards", methods=["GET"])
 def get_all_cards_for_board(board_id):
 
